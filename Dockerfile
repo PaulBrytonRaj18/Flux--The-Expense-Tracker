@@ -43,8 +43,11 @@ USER appuser
 
 ENV STATIC_DIR=/app/frontend/dist
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
 
-EXPOSE 8000
+# Cloud Run sets PORT to 8080 by default; this lets it override
+ENV PORT=8080
 
-CMD ["sh", "-c", "cd /app/backend && uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+EXPOSE 8080
+
+# Use Python module invocation (more reliable than shell expansion)
+CMD ["sh", "-c", "cd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT}"]

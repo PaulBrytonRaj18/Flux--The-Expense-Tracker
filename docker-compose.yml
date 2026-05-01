@@ -2,15 +2,15 @@ services:
   flux:
     build: .
     ports:
-      - "${PORT:-8000}:8000"
+      - "${PORT:-8000}:8080"
     environment:
-      - PORT=8000
+      - PORT=8080
       - DATABASE_URL=${DATABASE_URL}
       - SUPABASE_URL=${SUPABASE_URL}
-      - CORS_ORIGINS=http://localhost:8000,https://localhost:8000
+      - CORS_ORIGINS=http://localhost:${PORT:-8000},https://localhost:${PORT:-8000}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3
