@@ -3,7 +3,7 @@ FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --production=false
+RUN npm ci
 COPY frontend/ .
 RUN npm run build
 
@@ -47,7 +47,9 @@ ENV PYTHONUNBUFFERED=1
 # Cloud Run sets PORT to 8080 by default; this lets it override
 ENV PORT=8080
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8080/api/health || exit 1
+
 EXPOSE 8080
 
-# Use Python module invocation (more reliable than shell expansion)
-CMD ["sh", "-c", "cd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "cd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT} --workers 4"]
