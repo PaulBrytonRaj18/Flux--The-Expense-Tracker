@@ -1,0 +1,76 @@
+from contextlib import asynccontextmanager
+from pathlib import Path
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from dotenv import load_dotenv
+from routers import expenses, dashboard, insights, settings, goals
+from database import init_db
+import os
+
+load_dotenv()
+
+STATIC_DIR = Path(os.getenv("STATIC_DIR", Path(__file__).parent.parent / "frontend" / "dist"))
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    print("✅ Database initialized")
+    yield
+
+
+app = FastAPI(
+    title="Flux — Expense Tracker",
+    description="Behavioral change through Emotional ROI and Opportunity Cost visualization",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
+
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(expenses.router)
+app.include_router(dashboard.router)
+app.include_router(insights.router)
+app.include_router(settings.router)
+app.include_router(goals.router)
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "app": "Flux", "version": "1.0.0"}
+
+
+from auth import require_auth
+from seed import seed_user_data
+from fastapi import Depends
+
+
+@app.post("/api/auth/seed", tags=["auth"])
+def seed_data(user_id: str = Depends(require_auth)):
+    seeded = seed_user_data(user_id)
+    if seeded:
+        return {"ok": True, "message": "Demo data seeded"}
+    return {"ok": True, "message": "Already seeded"}
+
+
+if STATIC_DIR.exists() and STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        file_path = STATIC_DIR / full_path
+        if full_path and file_path.exists() and file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(STATIC_DIR / "index.html"))

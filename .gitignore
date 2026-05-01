@@ -1,0 +1,33 @@
+# Flux — Git ignore patterns
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment files
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
