@@ -1,7 +1,22 @@
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.venv/
+backend/.env
+backend/*.db
+backend/flux_data.json
+backend/migrations/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Root
 __pycache__/
 *.pyc
-venv/
 .venv/
+venv/
 .env
 *.env
 node_modules/
@@ -9,3 +24,9 @@ node_modules/
 .gitignore
 *.md
 .DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
