@@ -18,7 +18,7 @@ __pycache__/
 .venv/
 venv/
 .env
-*.env
+.env.example
 node_modules/
 .git/
 .gitignore
