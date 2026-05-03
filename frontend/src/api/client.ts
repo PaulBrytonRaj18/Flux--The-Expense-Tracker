@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 const API_BASE = '/api';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  if (!supabase) throw new Error('Supabase not configured');
+
   const { data, error } = await supabase.auth.getSession();
 
   if (error || !data.session) {

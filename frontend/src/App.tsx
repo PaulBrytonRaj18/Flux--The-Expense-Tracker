@@ -14,7 +14,7 @@ import { api } from './api/client';
 import { useAuth } from './context/AuthContext';
 
 function AppContent() {
-  const { user, session, loading: authLoading, signOut } = useAuth();
+  const { user, session, loading: authLoading, configured, signOut } = useAuth();
   const [page, setPage] = useState('dashboard');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [quickEntryOpen, setQuickEntryOpen] = useState(false);
@@ -36,6 +36,23 @@ function AppContent() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <div className="text-gradient" style={{ fontWeight: 900, fontSize: '2rem' }}>Flux</div>
+      </div>
+    );
+  }
+
+  if (!configured) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: 24 }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div className="text-gradient" style={{ fontWeight: 900, fontSize: '2rem', marginBottom: 16 }}>Flux</div>
+          <h2 style={{ color: '#f0f4ff', marginBottom: 8 }}>Configuration Error</h2>
+          <p style={{ color: '#8892b0', marginBottom: 16 }}>
+            Supabase credentials are missing. The app cannot connect to the backend.
+          </p>
+          <p style={{ color: '#5a6380', fontSize: '0.875rem', marginBottom: 24 }}>
+            Ensure <code style={{ background: '#1a1f2e', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_URL</code> and <code style={{ background: '#1a1f2e', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_ANON_KEY</code> are set in <code style={{ background: '#1a1f2e', padding: '2px 6px', borderRadius: 4 }}>frontend/.env</code> before building.
+          </p>
+        </div>
       </div>
     );
   }
