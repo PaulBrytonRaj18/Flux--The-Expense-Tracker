@@ -19,7 +19,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session fetch error:', error.message);
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -36,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
-    const requiresConfirmation = !!data?.user && data?.user.identities?.length === 0;
+    const requiresConfirmation = !!data?.user && !data.session;
     return { error, requiresConfirmation };
   };
 

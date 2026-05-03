@@ -71,7 +71,7 @@ class SettingsBase(BaseModel):
 
 
 class SettingsUpdate(SettingsBase):
-    pass
+    model_config = {"extra": "forbid"}
 
 
 class SettingsOut(SettingsBase):

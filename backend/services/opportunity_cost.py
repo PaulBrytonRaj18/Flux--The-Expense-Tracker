@@ -3,6 +3,7 @@ def calculate_opportunity_cost(amount: float, annual_rate: float, years: int) ->
     Compound interest: FV = PV * (1 + r)^n
     Shows what a purchase amount could become if invested instead.
     """
+    years = max(1, years)
     rate = annual_rate / 100.0
     projected = amount * ((1 + rate) ** years)
 

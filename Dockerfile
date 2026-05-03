@@ -14,7 +14,6 @@ WORKDIR /app
 
 # Install system deps + curl for healthcheck in one layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
     libpq-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -22,9 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python deps
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Remove build-only deps (gcc)
-RUN apt-get purge -y gcc && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser
@@ -43,13 +39,23 @@ USER appuser
 
 ENV STATIC_DIR=/app/frontend/dist
 ENV PYTHONUNBUFFERED=1
+ENV ENV=production
 
-# Cloud Run sets PORT to 8080 by default; this lets it override
-ENV PORT=8080
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
-
+# Cloud Run sets PORT to 8080 by default
 EXPOSE 8080
 
-CMD ["sh", "-c", "cd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT} --workers 4"]
+# Gunicorn with Uvicorn workers — production-grade async workers
+# --workers 2: balances concurrency with Cloud Run memory limits (512MB-2GB)
+# --timeout 30: handles slow DB queries without hanging
+# --keep-alive 5: connection reuse for better latency
+# --graceful-timeout 25: allows in-flight requests to finish on shutdown
+CMD ["sh", "-c", "cd /app/backend && gunicorn main:app \
+    --bind 0.0.0.0:${PORT:-8080} \
+    --workers 2 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --timeout 30 \
+    --graceful-timeout 25 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level info"]

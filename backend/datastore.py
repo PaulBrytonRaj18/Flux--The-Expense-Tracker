@@ -53,7 +53,8 @@ def get_all_expenses(db: Session, user_id: str, regret=False, category_id=None, 
     if category_id:
         q = q.filter(Expense.category_id == category_id)
     if search:
-        q = q.filter(Expense.description.ilike(f"%{search}%"))
+        safe_search = search.replace("%", "\\%").replace("_", "\\_")
+        q = q.filter(Expense.description.ilike(f"%{safe_search}%"))
     rows = q.order_by(Expense.date.desc()).limit(limit).all()
     return [_expense_to_dict(e) for e in rows]
 
@@ -78,8 +79,9 @@ def update_expense(db: Session, user_id: str, eid: int, updates: dict) -> dict |
     row = db.query(Expense).filter(Expense.id == eid, Expense.user_id == user_id).first()
     if not row:
         return None
+    allowed = {"amount", "category_id", "description", "date", "satisfaction_score", "is_recurring", "recurring_id"}
     for k, v in updates.items():
-        if k != "id" and hasattr(row, k):
+        if k in allowed:
             setattr(row, k, v)
     db.flush()
     return _expense_to_dict(row)
@@ -136,8 +138,9 @@ def update_goal(db: Session, user_id: str, gid: int, updates: dict) -> dict | No
     row = db.query(Goal).filter(Goal.id == gid, Goal.user_id == user_id).first()
     if not row:
         return None
+    allowed = {"name", "target_amount", "current_amount", "deadline", "icon"}
     for k, v in updates.items():
-        if k != "id" and hasattr(row, k):
+        if k in allowed:
             setattr(row, k, v)
     db.flush()
     return _goal_to_dict(row)
@@ -176,7 +179,7 @@ def get_settings(db: Session, user_id: str) -> dict:
         }
         row = Settings(**defaults)
         db.add(row)
-        db.flush()
+        db.commit()
     return _settings_to_dict(row)
 
 

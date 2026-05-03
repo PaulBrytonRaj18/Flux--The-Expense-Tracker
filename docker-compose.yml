@@ -7,14 +7,16 @@ services:
       - PORT=8080
       - DATABASE_URL=${DATABASE_URL}
       - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - CORS_ORIGINS=http://localhost:${PORT:-8000},https://localhost:${PORT:-8000}
+      - ENV=development
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 30s
     deploy:
       resources:
         limits:

@@ -21,15 +21,15 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # ── 1. Build frontend ────────────────────────────────────
 if [ "$SKIP_BUILD" = false ]; then
-  echo "📦 Building frontend..."
+  echo "Building frontend..."
   cd "$ROOT_DIR/frontend"
   npm install --production=false
   npm run build
-  echo "✅ Frontend built → frontend/dist/"
+  echo "Frontend built → frontend/dist/"
 fi
 
 # ── 2. Install Python deps ───────────────────────────────
-echo "🐍 Installing backend dependencies..."
+echo "Installing backend dependencies..."
 cd "$ROOT_DIR/backend"
 if [ -d "venv" ]; then
   source venv/bin/activate
@@ -41,9 +41,18 @@ fi
 
 # ── 3. Start server ──────────────────────────────────────
 echo ""
-echo "🚀 Starting Flux on http://0.0.0.0:$PORT"
-echo "   API docs: http://localhost:$PORT/api/docs"
+echo "Starting Flux on http://0.0.0.0:$PORT"
+echo "   API docs: http://localhost:$PORT/api/docs (dev only)"
 echo ""
 
 export STATIC_DIR="$ROOT_DIR/frontend/dist"
-exec uvicorn main:app --host 0.0.0.0 --port "$PORT"
+exec gunicorn main:app \
+  --bind "0.0.0.0:$PORT" \
+  --workers 2 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --timeout 30 \
+  --graceful-timeout 25 \
+  --keep-alive 5 \
+  --access-logfile - \
+  --error-logfile - \
+  --log-level info

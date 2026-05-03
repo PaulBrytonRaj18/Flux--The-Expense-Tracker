@@ -21,16 +21,22 @@ export function AuthPage({ mode, onSwitch }: AuthPageProps) {
     setLoading(true);
 
     try {
-      const { error } = mode === 'login'
-        ? await signIn(email, password)
-        : await signUp(email, password);
-
-      if (error) {
-        setError(error.message);
-      } else if (mode === 'signup') {
-        setSuccessMsg('Account created! You can now sign in.');
-        setEmail('');
-        setPassword('');
+      if (mode === 'signup') {
+        const { error, requiresConfirmation } = await signUp(email, password);
+        if (error) {
+          setError(error.message);
+        } else if (requiresConfirmation) {
+          setSuccessMsg('Account created! Check your email to confirm before signing in.');
+          setEmail('');
+          setPassword('');
+        } else {
+          setSuccessMsg('Account created! You are now signed in.');
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setError(error.message);
+        }
       }
     } catch {
       setError('An unexpected error occurred.');

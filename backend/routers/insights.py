@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/insights", tags=["insights"])
 
 
 @router.get("", response_model=InsightsOut)
-def get_insights(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def get_insights(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     settings_row = db.query(Settings).filter(Settings.user_id == user_id).first()
     if settings_row:
         years = settings_row.retirement_age - settings_row.user_age
@@ -56,7 +56,7 @@ def get_insights(db: Session = Depends(get_db), user_id: str = Depends(require_a
 
 
 @router.get("/opportunity-cost", response_model=OpportunityCostPrompt)
-def get_opportunity_cost(
+async def get_opportunity_cost(
     amount: float = Query(..., description="Purchase amount"),
     db: Session = Depends(get_db),
     user_id: str = Depends(require_auth),

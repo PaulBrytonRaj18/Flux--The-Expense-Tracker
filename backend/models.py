@@ -8,7 +8,7 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String, ForeignKey("auth.users.id"), nullable=False)
+    user_id = Column(String, nullable=False)
     name = Column(String, nullable=False)
     icon = Column(String, nullable=False, default="\U0001F4E6")
     color = Column(String, nullable=False, default="#00e5ff")
@@ -21,7 +21,7 @@ class Expense(Base):
     __tablename__ = "expenses"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String, ForeignKey("auth.users.id"), nullable=False)
+    user_id = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     description = Column(String, nullable=False, default="")
@@ -37,7 +37,7 @@ class Goal(Base):
     __tablename__ = "goals"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String, ForeignKey("auth.users.id"), nullable=False)
+    user_id = Column(String, nullable=False)
     name = Column(String, nullable=False)
     target_amount = Column(Float, nullable=False)
     current_amount = Column(Float, nullable=False, default=0.0)
@@ -49,7 +49,7 @@ class Settings(Base):
     __tablename__ = "settings"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String, ForeignKey("auth.users.id"), nullable=False)
+    user_id = Column(String, nullable=False)
     balance = Column(Float, nullable=False, default=5000.0)
     committed_bills = Column(Float, nullable=False, default=1200.0)
     goal_savings = Column(Float, nullable=False, default=500.0)

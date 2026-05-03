@@ -9,12 +9,12 @@ router = APIRouter(prefix="/api/goals", tags=["goals"])
 
 
 @router.get("", response_model=list[GoalOut])
-def list_goals(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def list_goals(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     return get_goals(db, user_id)
 
 
 @router.post("", response_model=GoalOut, status_code=201)
-def create_goal(body: GoalCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def create_goal(body: GoalCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     goal = add_goal(db, user_id, {
         "name": body.name,
         "target_amount": body.target_amount,
@@ -27,7 +27,7 @@ def create_goal(body: GoalCreate, db: Session = Depends(get_db), user_id: str = 
 
 
 @router.put("/{goal_id}", response_model=GoalOut)
-def edit_goal(goal_id: int, body: GoalCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def edit_goal(goal_id: int, body: GoalCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     updated = update_goal(db, user_id, goal_id, {
         "name": body.name,
         "target_amount": body.target_amount,
@@ -42,7 +42,7 @@ def edit_goal(goal_id: int, body: GoalCreate, db: Session = Depends(get_db), use
 
 
 @router.delete("/{goal_id}")
-def remove_goal(goal_id: int, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def remove_goal(goal_id: int, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     delete_goal(db, user_id, goal_id)
     db.commit()
     return {"ok": True}

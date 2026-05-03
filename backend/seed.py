@@ -55,6 +55,9 @@ def seed_user_data(user_id: str):
         if is_seeded(db, user_id):
             return False
 
+        existing_settings = db.query(Settings).filter(Settings.user_id == user_id).first()
+        existing_goals = db.query(Goal).filter(Goal.user_id == user_id).all()
+
         random.seed(42)
         now = datetime.utcnow()
 
@@ -96,23 +99,25 @@ def seed_user_data(user_id: str):
                     "recurring_id": rid,
                 })
 
-        for g_data in [
-            {"name": "Emergency Fund", "target_amount": 10000, "current_amount": 3500, "deadline": "2026-12-31", "icon": "🛡️"},
-            {"name": "Japan Trip", "target_amount": 5000, "current_amount": 1200, "deadline": "2027-06-01", "icon": "✈️"},
-            {"name": "New Laptop", "target_amount": 2000, "current_amount": 800, "deadline": "2026-09-01", "icon": "💻"},
-        ]:
-            db.add(Goal(user_id=user_id, **g_data))
+        if not existing_goals:
+            for g_data in [
+                {"name": "Emergency Fund", "target_amount": 10000, "current_amount": 3500, "deadline": "2026-12-31", "icon": "🛡️"},
+                {"name": "Japan Trip", "target_amount": 5000, "current_amount": 1200, "deadline": "2027-06-01", "icon": "✈️"},
+                {"name": "New Laptop", "target_amount": 2000, "current_amount": 800, "deadline": "2026-09-01", "icon": "💻"},
+            ]:
+                db.add(Goal(user_id=user_id, **g_data))
 
-        db.add(Settings(
-            user_id=user_id,
-            balance=5200.0,
-            committed_bills=1350.0,
-            goal_savings=500.0,
-            privacy_mode=False,
-            investment_rate=7.0,
-            user_age=28,
-            retirement_age=60,
-        ))
+        if not existing_settings:
+            db.add(Settings(
+                user_id=user_id,
+                balance=5200.0,
+                committed_bills=1350.0,
+                goal_savings=500.0,
+                privacy_mode=False,
+                investment_rate=7.0,
+                user_age=28,
+                retirement_age=60,
+            ))
 
         db.commit()
         return True

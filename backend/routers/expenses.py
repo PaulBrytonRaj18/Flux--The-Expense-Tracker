@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/expenses", tags=["expenses"])
 
 
 @router.get("", response_model=list[ExpenseOut])
-def list_expenses(
+async def list_expenses(
     regret: bool = Query(False, description="Filter low-satisfaction only"),
     category_id: int = Query(None, description="Filter by category"),
     search: str = Query(None, description="Search in description"),
@@ -25,7 +25,7 @@ def list_expenses(
 
 
 @router.post("", response_model=ExpenseOut, status_code=201)
-def create_expense(body: ExpenseCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def create_expense(body: ExpenseCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     exp = add_expense(db, user_id, {
         "amount": body.amount,
         "category_id": body.category_id,
@@ -40,7 +40,7 @@ def create_expense(body: ExpenseCreate, db: Session = Depends(get_db), user_id: 
 
 
 @router.put("/{expense_id}", response_model=ExpenseOut)
-def edit_expense(expense_id: int, body: ExpenseCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def edit_expense(expense_id: int, body: ExpenseCreate, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     updates = {
         "amount": body.amount,
         "category_id": body.category_id,
@@ -59,12 +59,12 @@ def edit_expense(expense_id: int, body: ExpenseCreate, db: Session = Depends(get
 
 
 @router.delete("/{expense_id}")
-def remove_expense(expense_id: int, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def remove_expense(expense_id: int, db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     delete_expense(db, user_id, expense_id)
     db.commit()
     return {"ok": True}
 
 
 @router.get("/categories", response_model=list[CategoryOut])
-def list_categories(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def list_categories(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     return get_categories(db, user_id)

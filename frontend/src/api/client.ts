@@ -3,11 +3,23 @@ import { supabase } from '../lib/supabase';
 const API_BASE = '/api';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const { data, error } = await supabase.auth.getSession();
 
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+  if (error || !data.session) {
+    await supabase.auth.signOut();
+    window.location.reload();
+    throw new Error('Not authenticated');
+  }
+
+  const { access_token } = data.session;
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${access_token}`,
+  };
+
+  if (options?.headers) {
+    Object.assign(headers, options.headers);
   }
 
   const res = await fetch(`${API_BASE}${url}`, {
@@ -21,7 +33,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     throw new Error('Session expired');
   }
 
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.detail || `API error: ${res.status}`);
+  }
+
   return res.json();
 }
 

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("", response_model=DashboardOut)
-def get_dashboard(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
+async def get_dashboard(db: Session = Depends(get_db), user_id: str = Depends(require_auth)):
     now = datetime.utcnow()
 
     safe = calculate_safe_to_spend(db, user_id)
